@@ -99,6 +99,11 @@ class TemplatedExecutorContainerSpec(executor_spec.ExecutorSpec):
       self, ph: placeholders.CommandlineArgumentType
   ) -> Union[str, placeholder.Placeholder]:
     if isinstance(ph, str):
+      # If there is no place holder.
+      return ph
+    elif isinstance(ph, placeholder.Placeholder):
+      # If the placeholder a the new style placeholder.
+      # No further transformation is needed.
       return ph
     elif isinstance(ph, placeholders.InputValuePlaceholder):
       return placeholder.input(ph.input_name)[0]
