@@ -19,6 +19,7 @@ import os
 import threading
 
 from absl import logging
+from absl.testing import parameterized
 from absl.testing.absltest import mock
 import tensorflow as tf
 from tfx.orchestration import data_types_utils
@@ -249,7 +250,7 @@ def _make_executor_output(task, code=status_lib.Code.OK, msg=''):
   return executor_output
 
 
-class TaskManagerE2ETest(tu.TfxTest):
+class TaskManagerE2ETest(tu.TfxTest, parameterized.TestCase):
   """Test end-to-end from task generation to publication of results to MLMD."""
 
   def setUp(self):
@@ -361,13 +362,15 @@ class TaskManagerE2ETest(tu.TfxTest):
       executions = m.store.get_executions_by_id([self._execution_id])
     return executions[0]
 
-  def test_successful_execution(self):
+  @parameterized.parameters(True, False)
+  def test_successful_execution(self, with_executor_output):
     # Register a fake task scheduler that returns a successful execution result
     # and `OK` task scheduler status.
     self._register_task_scheduler(
         ts.TaskSchedulerResult(
             status=status_lib.Status(code=status_lib.Code.OK),
-            executor_output=_make_executor_output(self._task, code=0)))
+            executor_output=_make_executor_output(self._task, code=0)
+            if with_executor_output else None))
     task_manager = self._run_task_manager()
     self.assertTrue(task_manager.done())
     self.assertIsNone(task_manager.exception())
