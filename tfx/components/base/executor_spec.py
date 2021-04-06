@@ -36,3 +36,8 @@ ExecutorContainerSpec = deprecation_utils.deprecated_alias(  # pylint: disable=i
     deprecated_name='tfx.components.base.executor_spec.ExecutorContainerSpec',
     name='tfx.dsl.components.base.executor_spec.ExecutorContainerSpec',
     func_or_class=executor_spec.ExecutorContainerSpec)
+
+BeamExecutorSpec = deprecation_utils.deprecated_alias(  # pylint: disable=invalid-name
+    deprecated_name='tfx.components.base.executor_spec.BeamExecutorSpec',
+    name='tfx.dsl.components.base.executor_spec.BeamExecutorSpec',
+    func_or_class=executor_spec.BeamExecutorSpec)

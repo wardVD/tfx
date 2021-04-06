@@ -32,7 +32,7 @@ class BigQueryToElwcExampleGen(component.QueryBasedExampleGen):
   and eval ExampleListWithContext(ELWC) for downstream components.
   """
 
-  EXECUTOR_SPEC = executor_spec.ExecutorClassSpec(executor.Executor)
+  EXECUTOR_SPEC = executor_spec.BeamExecutorSpec(executor.Executor)
 
   def __init__(self,
                query: Optional[Text] = None,
