@@ -22,7 +22,6 @@ from tfx.dsl.io import fileio
 from tfx.orchestration import metadata
 from tfx.orchestration.portable import base_driver_operator
 from tfx.orchestration.portable import base_executor_operator
-from tfx.orchestration.portable import beam_executor_operator
 from tfx.orchestration.portable import cache_utils
 from tfx.orchestration.portable import data_types
 from tfx.orchestration.portable import docker_executor_operator
@@ -41,7 +40,6 @@ from tfx.proto.orchestration import pipeline_pb2
 
 from google.protobuf import message
 from ml_metadata.proto import metadata_store_pb2
-
 # Subclasses of BaseExecutorOperator
 ExecutorOperator = TypeVar(
     'ExecutorOperator', bound=base_executor_operator.BaseExecutorOperator)
@@ -53,8 +51,6 @@ DriverOperator = TypeVar(
 DEFAULT_EXECUTOR_OPERATORS = {
     executable_spec_pb2.PythonClassExecutableSpec:
         python_executor_operator.PythonExecutorOperator,
-    executable_spec_pb2.BeamExecutableSpec:
-        beam_executor_operator.BeamExecutorOperator,
     executable_spec_pb2.ContainerExecutableSpec:
         docker_executor_operator.DockerExecutorOperator
 }
@@ -69,6 +65,11 @@ _SYSTEM_NODE_HANDLERS = {
     'tfx.dsl.components.common.importer.Importer':
         importer_node_handler.ImporterNodeHandler,
     'tfx.dsl.components.common.resolver.Resolver':
+        resolver_node_handler.ResolverNodeHandler,
+    # TODO(b/177457236): Remove support for the following after release.
+    'tfx.dsl.components.common.importer_node.ImporterNode':
+        importer_node_handler.ImporterNodeHandler,
+    'tfx.dsl.components.common.resolver_node.ResolverNode':
         resolver_node_handler.ResolverNodeHandler,
 }
 # LINT.ThenChange(Internal system node list)
@@ -185,9 +186,8 @@ class Launcher(object):
     if system_node_handler_class:
       self._system_node_handler = system_node_handler_class()
 
-    assert bool(self._executor_operator) or bool(
-        self._system_node_handler
-    ), 'A node must be system node or have an executor.'
+    assert bool(self._executor_operator) or bool(self._system_node_handler), \
+        'A node must be system node or have an executor.'
 
   def _prepare_execution(self) -> _ExecutionPreparationResult:
     """Prepares inputs, outputs and execution properties for actual execution."""
