@@ -310,6 +310,17 @@ class UtilsTest(tf.test.TestCase):
       utils.calculate_splits_fingerprint_span_and_version(
           self._input_base_path, splits3)
 
+    query = example_gen_pb2.Input.Split(
+        name='s1',
+        pattern='select * from table where date={YYYY}{MM}{DD} and year={YYYY}')
+    _, is_match_date, _ = utils.verify_split_pattern_specs(query, True)
+    self.assertTrue(is_match_date)
+
+    query2 = example_gen_pb2.Input.Split(
+        name='s1', pattern='select * from table where date={MM}{DD}')
+    with self.assertRaisesRegexp(ValueError, 'Date spec .* is required'):
+      utils.verify_split_pattern_specs(query2, True)
+
   def testHaveSpanNoVersion(self):
     # Test specific behavior when Span spec is present but Version is not.
     split1 = os.path.join(self._input_base_path, 'span1', 'split1', 'data')

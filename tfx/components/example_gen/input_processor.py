@@ -28,20 +28,22 @@ class InputProcessor(six.with_metaclass(abc.ABCMeta, object)):
 
   def __init__(self,
                splits: Iterable[example_gen_pb2.Input.Split],
-               range_config: Optional[range_config_pb2.RangeConfig] = None):
+               range_config: Optional[range_config_pb2.RangeConfig] = None,
+               allow_multiple_date: bool = False):
     """Initialize InputProcessor.
 
     Args:
       splits: An iterable collection of example_gen_pb2.Input.Split objects.
       range_config: An instance of range_config_pb2.RangeConfig, defines the
         rules for span resolving.
+      allow_multiple_date: Whether to allow multiple date spec in split pattern.
     """
     self._is_match_span = None
     self._is_match_date = None
     self._is_match_version = None
     for split in splits:
       is_match_span, is_match_date, is_match_version = utils.verify_split_pattern_specs(
-          split)
+          split, allow_multiple_date)
       if self._is_match_span is None:
         self._is_match_span = is_match_span
         self._is_match_date = is_match_date
@@ -157,7 +159,7 @@ class FileBasedInputProcessor(InputProcessor):
         rules for span resolving.
     """
     super(FileBasedInputProcessor, self).__init__(
-        splits=splits, range_config=range_config)
+        splits=splits, range_config=range_config, allow_multiple_date=False)
     self._input_base_uri = input_base_uri
     self._fingerprint = None
 
@@ -187,6 +189,19 @@ class FileBasedInputProcessor(InputProcessor):
 
 class QueryBasedInputProcessor(InputProcessor):
   """Custom InputProcessor for query based ExampleGen driver."""
+
+  def __init__(self,
+               splits: Iterable[example_gen_pb2.Input.Split],
+               range_config: Optional[range_config_pb2.RangeConfig] = None):
+    """Initialize QueryBasedInputProcessor.
+
+    Args:
+      splits: An iterable collection of example_gen_pb2.Input.Split objects.
+      range_config: An instance of range_config_pb2.RangeConfig, defines the
+        rules for span resolving.
+    """
+    super(QueryBasedInputProcessor, self).__init__(
+        splits=splits, range_config=range_config, allow_multiple_date=True)
 
   def get_latest_span(self) -> int:
     """Resolves the latest Span information."""

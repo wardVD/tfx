@@ -94,7 +94,8 @@ class InputProcessorTest(tf.test.TestCase):
     input_config_date = example_gen_pb2.Input(splits=[
         example_gen_pb2.Input.Split(
             name='s',
-            pattern="select * from table where date='{YYYY}-{MM}-{DD}'")
+            pattern="select * from table where date='{YYYY}-{MM}-{DD}' and year='{YYYY}'"
+        )
     ])
     input_config_version = example_gen_pb2.Input(splits=[
         example_gen_pb2.Input.Split(
@@ -150,7 +151,8 @@ class InputProcessorTest(tf.test.TestCase):
     self.assertIsNone(fp)
     pattern = processor.get_pattern_for_span_version(
         input_config_date.splits[0].pattern, span, version)
-    self.assertEqual(pattern, "select * from table where date='1970-01-03'")
+    self.assertEqual(
+        pattern, "select * from table where date='1970-01-03' and year='1970'")
 
 
 if __name__ == '__main__':

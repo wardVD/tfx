@@ -271,7 +271,8 @@ def _make_zero_padding_spec_value(spec_full_regex: Text, pattern: Text,
 
 
 def verify_split_pattern_specs(
-    split: example_gen_pb2.Input.Split) -> Tuple[bool, bool, bool]:
+    split: example_gen_pb2.Input.Split,
+    allow_multiple_date: bool = False) -> Tuple[bool, bool, bool]:
   """Verify and identify specs to be matched in split pattern."""
   # Match occurences of pattern '{SPAN}|{SPAN:*}'. If it exists, capture
   # span width modifier. Otherwise, the empty string is captured.
@@ -294,11 +295,16 @@ def verify_split_pattern_specs(
     raise ValueError('Only one %s is allowed in %s' %
                      (SPAN_SPEC, split.pattern))
 
-  if is_match_date and not all(
-      split.pattern.count(spec) == 1 for spec in DATE_SPECS):
-    raise ValueError(
-        'Exactly one of each date spec (%s, %s, %s) is required in %s' %
-        (YEAR_SPEC, MONTH_SPEC, DAY_SPEC, split.pattern))
+  if is_match_date:
+    if allow_multiple_date and not all(
+        split.pattern.count(spec) >= 1 for spec in DATE_SPECS):
+      raise ValueError('Date spec (%s, %s, %s) is required in %s' %
+                       (YEAR_SPEC, MONTH_SPEC, DAY_SPEC, split.pattern))
+    elif not allow_multiple_date and not all(
+        split.pattern.count(spec) == 1 for spec in DATE_SPECS):
+      raise ValueError(
+          'Exactly one of each date spec (%s, %s, %s) is required in %s' %
+          (YEAR_SPEC, MONTH_SPEC, DAY_SPEC, split.pattern))
 
   if is_match_version and (not is_match_span and not is_match_date):
     raise ValueError(
