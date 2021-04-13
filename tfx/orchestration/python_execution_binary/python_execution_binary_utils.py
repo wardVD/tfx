@@ -15,8 +15,6 @@ r"""Shared IR serialization logic used by TFleX python executor binary."""
 
 import base64
 
-from typing import Union
-
 from tfx.orchestration import metadata
 from tfx.orchestration.portable import data_types
 from tfx.proto.orchestration import executable_spec_pb2
@@ -42,14 +40,8 @@ def deserialize_mlmd_connection_config(
 
 
 def deserialize_executable_spec(
-    executable_spec_b64: str,
-    with_beam: bool = False,
-) -> Union[executable_spec_pb2.PythonClassExecutableSpec,
-           executable_spec_pb2.BeamExecutableSpec]:
+    executable_spec_b64: str) -> executable_spec_pb2.PythonClassExecutableSpec:
   """De-serializes an executable spec from base64 flag."""
-  if with_beam:
-    return executable_spec_pb2.BeamExecutableSpec.FromString(
-        base64.b64decode(executable_spec_b64))
   return executable_spec_pb2.PythonClassExecutableSpec.FromString(
       base64.b64decode(executable_spec_b64))
 
@@ -67,9 +59,7 @@ def serialize_mlmd_connection_config(
 
 
 def serialize_executable_spec(
-    executable_spec: Union[executable_spec_pb2.PythonClassExecutableSpec,
-                           executable_spec_pb2.BeamExecutableSpec]
-) -> str:
+    executable_spec: executable_spec_pb2.PythonClassExecutableSpec) -> str:
   """Serializes an executable spec into a base64 flag."""
   return base64.b64encode(executable_spec.SerializeToString()).decode('ascii')
 
